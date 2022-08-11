@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"time"
@@ -46,24 +47,23 @@ func makeDir(name string) error {
 	return nil
 }
 
+func scan(str *string, info string) {
+	fmt.Print(info)
+	_, err := fmt.Scanln(str)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	var fromPath string
 	var toPath string
 
-	fmt.Print("Source directory: ")
-	_, err := fmt.Scanln(&fromPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Print("Target directory: ")
-	_, err = fmt.Scanln(&toPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	scan(&fromPath, "Source directory: ")
+	scan(&toPath, "Target directory: ")
 
 	var dumpName = strconv.Itoa(int(time.Now().Unix()))
-	var targetPath = fmt.Sprintf("%s/%s", toPath, dumpName)
+	var targetPath = filepath.Join(toPath, dumpName)
 
 	files, err := ioutil.ReadDir(fromPath)
 	if err != nil {
@@ -79,15 +79,15 @@ func main() {
 		if !v.IsDir() {
 			formatDir := getFormat(v.Name())
 
-			srcFile := fmt.Sprintf("%s/%s", fromPath, v.Name())
-			finalDir := fmt.Sprintf("%s/%s", targetPath, formatDir)
+			srcFile := filepath.Join(fromPath, v.Name())
+			finalDir := filepath.Join(targetPath, formatDir)
 
 			err := makeDir(finalDir)
 			if err != nil {
 				log.Println(err)
 			}
 
-			moveFile(srcFile, finalDir+"/"+v.Name())
+			moveFile(srcFile, filepath.Join(finalDir, v.Name()))
 		}
 	}
 
